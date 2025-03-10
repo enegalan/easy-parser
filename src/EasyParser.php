@@ -1,5 +1,7 @@
 <?php
 
+namespace enegalan\EasyParser;
+
 use League\HTMLToMarkdown\Environment;
 use League\HTMLToMarkdown\HtmlConverter;
 use League\HTMLToMarkdown\Converter\TableConverter;
