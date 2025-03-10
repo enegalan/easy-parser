@@ -15,6 +15,7 @@
             "EasyParser\\": "src/"
         }
     },
+    "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
         "league/html-to-markdown": "^5.1",
