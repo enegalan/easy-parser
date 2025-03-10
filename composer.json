@@ -1,6 +1,7 @@
 {
     "name": "enegalan/easy-parser",
     "description": "All in one HTML and Markdown parser",
+    "keywords": ["markdown", "html", "parser"],
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -14,7 +15,6 @@
             "EasyParser\\": "src/"
         }
     },
-    "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
         "league/html-to-markdown": "^5.1",
