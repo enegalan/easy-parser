@@ -1,4 +1,21 @@
 {
+    "name": "enegalan/easy-parser",
+    "description": "All in one HTML and Markdown parser",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eneko Galan",
+            "email": "enekogalanelorza@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "EasyParser": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "require": {
         "league/html-to-markdown": "^5.1",
         "erusev/parsedown": "^1.7"
