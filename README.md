@@ -12,8 +12,7 @@
 To use `EasyParser`, first install the dependencies via Composer:
 
 ```bash
-composer require league/html-to-markdown
-composer require erusev/parsedown
+composer require enegalan/easy-parser
 ```
 
 ## How to use it
