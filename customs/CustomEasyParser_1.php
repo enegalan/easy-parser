@@ -1,12 +1,12 @@
 <?php
 
-require dirname(__DIR__).'/src/EasyParser.php';
+// require dirname(__DIR__).'/src/EasyParser.php';
 
-use League\HTMLToMarkdown\Environment;
+use EasyParser\EasyParser;
 
 class CustomEasyParser_1 extends EasyParser {
-    public function __construct(array $options = array(), array|Environment $environment) {
-        parent::__construct($options, $environment);
+    public function __construct(array $options = array()) {
+        parent::__construct($options);
     }
     public static function convert(string $html) {
         $html = self::preProcessHtml($html); // Additional pre-cleaning

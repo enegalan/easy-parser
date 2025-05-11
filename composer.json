@@ -12,7 +12,8 @@
     ],
     "autoload": {
         "psr-4": {
-            "enegalan\\EasyParser\\": "src/"
+            "EasyParser\\": "src/",
+            "EasyParser\\Converter\\": "src/Converter/"
         }
     },
     "minimum-stability": "dev",

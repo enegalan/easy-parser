@@ -3,24 +3,29 @@
 namespace EasyParser;
 
 use League\HTMLToMarkdown\HtmlConverter;
-use League\HTMLToMarkdown\Converter\TableConverter;
-
+use EasyParser\Converter\TableBlockConverter;
+use EasyParser\Converter\StrikethroughConverter;
+use EasyParser\Converter\ListConverter;
+use EasyParser\Converter\HorizontalRuleConverter;
+use EasyParser\Converter\HeadingConverter;
 requireAutoloader();
 
-class EasyParser {
+class EasyParser extends \Parsedown {
     public static $converter;
-    public static $parsedown;
-
-    public function __construct(array $options = array(), array $environment = array()) {
-        self::$converter = $this->buildConverter($environment);
+    public function __construct(array $options = array()) {
+        self::$converter = $this->buildConverter($options);
         $opts = array_merge($this->getDefaultOptions(), $options);
         $this->setOptions($opts);
-        self::$parsedown = new \Parsedown();
     }
 
-    private function buildConverter(array $environment = array()) {
-        $converter = new HtmlConverter($environment);
-        $converter->getEnvironment()->addConverter(new TableConverter()); // Add tables support
+    private function buildConverter(array $options = array()) {
+        $converter = new HtmlConverter($options);
+        // Custom converters
+        $converter->getEnvironment()->addConverter(new TableBlockConverter()); // Add tables support
+        $converter->getEnvironment()->addConverter(new StrikethroughConverter()); // Add strikethrough support
+        $converter->getEnvironment()->addConverter(new ListConverter()); // Add lists support
+        $converter->getEnvironment()->addConverter(new HorizontalRuleConverter()); // Add horizontal rule support
+        $converter->getEnvironment()->addConverter(new HeadingConverter()); // Add heading support
         return $converter;
     }
 
@@ -57,7 +62,7 @@ class EasyParser {
             if ($lastLineBreak === false) $lastLineBreak = 0;
             $prevLine = substr($beforeChunk, $lastLineBreak);
             $brCount = substr_count($prevLine, '<br>');
-            if (preg_match('/<p>/', $prevLine) || $brCount >= 2) {
+            if (preg_match('/<p>/', $prevLine) || preg_match('/<\/p>/', $prevLine) || $brCount >= 2) {
                 // If there is already a <p> or two <br> in the previous line, do not add anything
                 return $matches[0];
             } else {
@@ -69,9 +74,12 @@ class EasyParser {
     }
 
     private static function cleanMarkdown(string $markdown) {
-        $search = [" \n ", "\n ", "|---", "\n```\n", "<del>", "</del>", "       ", "   ", "•"];
-        $replace = [" ", "\n", "| -------- ", "```\n", "~~", "~~", "\t\t", "\t", self::$converter->getConfig()->getOption('list_item_style')];
-        $markdown = str_replace($search, $replace, $markdown);
+        $replacings = array(
+            "\n " => "\n",
+            "\n```\n" => "```\n",
+            "•" => self::$converter->getConfig()->getOption('list_item_style')
+        );
+        $markdown = self::str_replace_assoc($replacings, $markdown);
         $markdown = preg_replace_callback('/```(\w+)?\s*(.*?)\s*```/s', function ($matches) {
             $language = $matches[1] ?? '';
             $codeContent = preg_replace('/\n\s*\n/', "\n", trim($matches[2]));
@@ -83,10 +91,7 @@ class EasyParser {
         $markdown = preg_replace('/```\n+/', "```\n", $markdown); // Remove any newlines after code blocks
         $markdown = preg_replace('/\\\(\*)/', '$1', $markdown); // Remove asterisks (*) escaping
         $markdown = preg_replace('/\\\(\-)/', '$1', $markdown); // Remove dash (-) escaping
-        $markdown = preg_replace('/\n{3,}/', "\n\n\n", $markdown); // Replace more than 2 line breaks
-        $markdown = preg_replace("/\n{2,}/", "\n\n", $markdown); // Normalize multiple newlines
         $markdown = preg_replace("/\n(?=\*)/", "\n", $markdown); // Remove any newline before list item
-        $markdown = preg_replace('/\*\s+(?=\r?\n)/', "*\n", $markdown); // Remove space after asterisk and before newline
         return $markdown;
     }
 
@@ -94,8 +99,14 @@ class EasyParser {
         return array (
             'italic_style' => '*',
             'header_style' => 'atx', // #, ##, ###...
-            'strip_tags' => true,
+            'strikethrough_style' => '~~',
+            'horizontal_rule' => "\n---\n\n\n",
             'list_item_style' => '*',
+            'table_align_left' => ':-------',
+            'table_align_right' => '-------:',
+            'table_align_center' => ':------:',
+            'table_align_default' => '--------',
+            'strip_tags' => true,
             'use_autolinks' => false, // Links []()
             'hard_break' => true, // "something\nline break"
         );
@@ -106,33 +117,11 @@ class EasyParser {
             self::$converter->getConfig()->setOption($opt_key, $opt_value);
         }
     }
-    // Implement Parsedown functions
-    public static function text(string $text) {
-        return self::$parsedown->text($text);
-    }
-
-    public static function line(string $text, array $nonNestables = array()) {
-        return self::$parsedown->line($text, $nonNestables);
-    }
-
-    public static function setBreaksEnabled(bool $breaksEnabled) {
-        return self::$parsedown->setBreaksEnabled($breaksEnabled);
-    }
-
-    public static function setBreaksEnablesd(bool $markupEscaped) {
-        return self::$parsedown->setMarkupEscaped($markupEscaped);
-    }
-
-    public static function setSafeMode(bool $safeMode) {
-        return self::$parsedown->setSafeMode($safeMode);
-    }
-
-    public static function setUrlsLinked(bool $urlsLinked) {
-        return self::$parsedown->setUrlsLinked($urlsLinked);
-    }
-
-    public static function parse(string $text) {
-        return self::$parsedown->parse($text);
+    private static function str_replace_assoc(array $replacing, string $subject) {
+        foreach ($replacing as $from => $to) {
+            $subject = str_replace($from, $to, $subject);
+        }
+        return $subject;
     }
 }
 
